@@ -1,0 +1,18 @@
+{
+  "name": "jQuery todo",
+  "version": "0.0.0",
+  "authors": [
+    "maryna <luv_this_world@hotmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4"
+  }
+}
