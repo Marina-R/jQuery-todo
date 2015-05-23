@@ -30,10 +30,10 @@ function start(){
 		return '<ul><li>' + todoArray.join('</li><li>') + '</li></ul>';
 	}
 
-	$submit.on('submit', onPost);
-    $('ul li').on('click', function (e) {e.target.style.textDecoration = 'line-through'});
-    
-    function storage () {
+    function storage (elem) {
 		localStorage.setItem('list', JSON.stringify(elem));
 	}
+	
+	$submit.on('submit', onPost);
+    $('ul li').on('click', function (e) {e.target.style.textDecoration = 'line-through'});
 }
