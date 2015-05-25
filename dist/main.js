@@ -14,26 +14,63 @@ function start(){
 	}
 	render(todoArray);
 
+	var counter = 0;
+	console.log(counter);
+
+	if (localStorage.getItem('counter') == null) {
+		counter = 0;
+	} else {
+		counter = JSON.parse(localStorage.getItem('counter'));
+	}
+
 	var innerHtml = render(todoArray);
 	$list.html(innerHtml);
 
 	function onPost (e) {
 		e.preventDefault();
-		todoArray.push($input.val());
+		todoArray.push({id: counter, todo: $input.val(), completed: false, deleted: false});
+		counter++;
 		$input.val('');
 		var innerHtml = render(todoArray);
 		$list.html(innerHtml);
-		storage(todoArray);
+		$('ul li').on('click', clickHandler);
+		storage('list', todoArray);
+		storage ('counter', counter);
 	}
 
 	function render(todo) {
-		return '<ul><li>' + todoArray.join('</li><li>') + '</li></ul>';
+		var array = [];
+		for (var i=0; i<todoArray.length; i++) {
+			var listId = todoArray[i]['id'];
+			console.log(listId);
+			var myTodo = todoArray[i]['todo'];
+			if (todoArray[i]['completed'] == true) {	
+				array.push('<li id="' + listId + '" style = "text-decoration:line-through">' + myTodo);
+				console.log(array);
+			} 
+			else if (todoArray[i]['deleted'] == true) {
+				array.push('<li id="' + listId + '" style = "display:none">' + myTodo);
+			} else {
+			array.push('<li id="' + listId + '">' + myTodo);
+			}
+		}
+		return '<ul>' + array.join('</li>') + '</li></ul>';
 	}
 
-    function storage (elem) {
-		localStorage.setItem('list', JSON.stringify(elem));
+    function storage (key, elem) {
+		localStorage.setItem(key, JSON.stringify(elem));
 	}
-	
+
 	$submit.on('submit', onPost);
-    $('ul li').on('click', function (e) {e.target.style.textDecoration = 'line-through'});
+    $('ul li').on('click', clickHandler);
+
+	function clickHandler (e) {
+    	e.target.style.textDecoration = 'line-through'
+    	for(var i=0; i<todoArray.length; i++){
+    		if (todoArray[i]['id'] == $(this).attr('id'))
+    			{todoArray[i]['completed'] = true; break;}
+    	}
+    	console.log(todoArray);
+    	storage('list', todoArray);
+    }
 }
