@@ -1,47 +1,55 @@
 $(document).on('ready', start);
 function start(){
-	// localStorage.clear();
     
 	var $submit = $('#input-form');
 	var $input = $('#form-line');
 	var $list = $('#todo-list');
 	var todoArray=[];
 
-	if (localStorage.getItem('list') === null) {
-		todoArray = [];
-	} else {
-		todoArray = JSON.parse(localStorage.getItem('list'));
-	}
-	render(todoArray);
-
-	var counter = 0;
-	console.log(counter);
-
-	if (localStorage.getItem('counter') == null) {
-		counter = 0;
-	} else {
-		counter = JSON.parse(localStorage.getItem('counter'));
-	}
+	$.get('http://tiny-pizza-server.herokuapp.com/collections/marina/', 
+		function (data) { 
+			if(data instanceof Array == true ) {
+				todoArray = data; 
+				render(todoArray);
+				console.log(todoArray); 
+				var innerHtml = render(todoArray);
+				$list.html(innerHtml);
+				$('ul li').on('click', clickHandler)
+			} 
+		}
+	);
 
 	var innerHtml = render(todoArray);
 	$list.html(innerHtml);
 
 	function onPost (e) {
 		e.preventDefault();
-		todoArray.push({id: counter, todo: $input.val(), completed: false, deleted: false});
-		counter++;
-		$input.val('');
-		var innerHtml = render(todoArray);
-		$list.html(innerHtml);
-		$('ul li').on('click', clickHandler);
-		storage('list', todoArray);
-		storage ('counter', counter);
+		$.post('http://tiny-pizza-server.herokuapp.com/collections/marina/',
+		{
+			todo: $input.val(),
+			completed: false,
+			deleted: false
+		})
+		
+		$.get('http://tiny-pizza-server.herokuapp.com/collections/marina/', 
+			function (data) { 
+				var thisId;
+				for(var id in data[0]) {
+					thisId = data[0]._id;
+				}
+					todoArray.push({_id: thisId, todo: $input.val(), completed: false, deleted: false});
+				var innerHtml = render(todoArray);
+				$input.val('');
+				$list.html(innerHtml);
+				$('ul li').on('click', clickHandler);
+			}
+		);
 	}
 
 	function render(todo) {
 		var array = [];
 		for (var i=0; i<todoArray.length; i++) {
-			var listId = todoArray[i]['id'];
+			var listId = todoArray[i]['_id'];
 			console.log(listId);
 			var myTodo = todoArray[i]['todo'];
 			if (todoArray[i]['completed'] == true) {	
@@ -57,20 +65,20 @@ function start(){
 		return '<ul>' + array.join('</li>') + '</li></ul>';
 	}
 
-    function storage (key, elem) {
-		localStorage.setItem(key, JSON.stringify(elem));
-	}
-
 	$submit.on('submit', onPost);
     $('ul li').on('click', clickHandler);
 
 	function clickHandler (e) {
-    	e.target.style.textDecoration = 'line-through'
+    	e.target.style.textDecoration = 'line-through';
     	for(var i=0; i<todoArray.length; i++){
-    		if (todoArray[i]['id'] == $(this).attr('id'))
-    			{todoArray[i]['completed'] = true; break;}
+    		if (todoArray[i]['_id'] == $(this).attr('id')) {
+    			todoArray[i]['completed'] = true; 
+    			$.put ('http://tiny-pizza-server.herokuapp.com/collections/marina/'+ todoArray[i]['_id'] , 
+				{
+					completed: true,
+				});
+    		}
     	}
-    	console.log(todoArray);
-    	storage('list', todoArray);
+    	render(todoArray);
     }
 }
